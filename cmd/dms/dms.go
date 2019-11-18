@@ -15,6 +15,7 @@ func Index(ctx *fasthttp.RequestCtx) {
 func main() {
 	router := fasthttprouter.New()
 	router.GET("/", Index)
+	router.GET("/model", handler.Model)
 	router.POST("/", handler.Create)
 
 	log.Fatal(fasthttp.ListenAndServe(":8001", router.Handler))

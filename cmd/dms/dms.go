@@ -3,40 +3,47 @@ package main
 import (
 	"fmt"
 	"github.com/buaazp/fasthttprouter"
+	"github.com/lekhacman/dms/internal/config"
 	"github.com/lekhacman/dms/internal/handler"
-	"github.com/lekhacman/dms/internal/store"
 	"github.com/valyala/fasthttp"
 	"log"
 	"os"
 )
 
-func Index(ctx *fasthttp.RequestCtx) {
-	_, _ = fmt.Fprint(ctx, "Document Center Service")
+func Index(appName string) func(ctx *fasthttp.RequestCtx) {
+	return func(ctx *fasthttp.RequestCtx) {
+		_, _ = fmt.Fprint(ctx, appName)
+	}
 }
 
 func main() {
 
-	db, err := store.NewDmsStore(store.DbSpec{
-		"postgres",
-		os.Getenv("dbpass"),
-		"dms",
-		"localhost",
-		"5432",
-	})
+	conf := config.Get(fmt.Sprintf("internal/conf/conf.%s.toml", os.Getenv("env")))
 
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = db.Query("SELECT * FROM documents")
-	if err != nil {
-		log.Fatal(err)
-	}
+	//db, err := store.NewDmsStore(store.DbSpec{
+	//	"dms",
+	//	os.Getenv("dbpass"),
+	//	"dms",
+	//	"localhost",
+	//	"5432",
+	//})
+	//
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//_, err = db.Query("SELECT * FROM objects")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
 	router := fasthttprouter.New()
-	router.GET("/", Index)
+	router.GET("/", Index(conf.Name))
 	router.GET("/model", handler.Model)
 	router.POST("/", handler.Create)
 
-	log.Fatal(fasthttp.ListenAndServe(":8001", router.Handler))
+	log.Fatal(fasthttp.ListenAndServe(
+		fmt.Sprintf(":%s", conf.App.Port),
+		router.Handler,
+	))
 }

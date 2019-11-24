@@ -1,0 +1,14 @@
+name = "Document Center Service"
+
+[author]
+name = "Le Khac Man"
+email = "khacmanle gmail dot com"
+
+[db]
+host = "localhost"
+port = "5432"
+user = "dms"
+password = "dms123"
+
+[app]
+port = "8001"

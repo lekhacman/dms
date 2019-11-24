@@ -11,10 +11,9 @@ import (
 )
 
 func Create(ctx *fasthttp.RequestCtx) {
-	document := model.Document{
+	document := model.Object{
 		uuid.New(),
 		"hello world",
-		"txt",
 		"test",
 		1,
 		time.Now(),

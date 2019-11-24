@@ -9,7 +9,7 @@ import (
 )
 
 func Model(ctx *fasthttp.RequestCtx) {
-	var document model.Document
+	var document model.Object
 
 	ctx.Response.Header.Add("content-type", "application/json")
 	b, err := json.Marshal(document)

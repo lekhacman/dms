@@ -12,3 +12,4 @@ password = "dms123"
 
 [app]
 port = "8001"
+loglevel = 'trace'

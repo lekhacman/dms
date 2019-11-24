@@ -5,8 +5,8 @@ import (
 	"github.com/buaazp/fasthttprouter"
 	"github.com/lekhacman/dms/internal/config"
 	"github.com/lekhacman/dms/internal/handler"
+	log "github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
-	"log"
 	"os"
 )
 
@@ -18,7 +18,22 @@ func Index(appName string) func(ctx *fasthttp.RequestCtx) {
 
 func main() {
 
-	conf := config.Get(fmt.Sprintf("internal/conf/conf.%s.toml", os.Getenv("env")))
+	conf := config.Get(fmt.Sprintf("internal/config/config.%s.toml", os.Getenv("env")))
+
+	logMap := map[string]log.Level{
+		"panic": log.PanicLevel,
+		"fatal": log.FatalLevel,
+		"error": log.ErrorLevel,
+		"warn":  log.WarnLevel,
+		"info":  log.InfoLevel,
+		"debug": log.DebugLevel,
+		"trace": log.TraceLevel,
+	}
+	logLevel, ok := logMap[conf.App.LogLevel]
+	if !ok {
+		log.Fatal("Log level not found")
+	}
+	log.SetLevel(logLevel)
 
 	//db, err := store.NewDmsStore(store.DbSpec{
 	//	"dms",
@@ -42,6 +57,7 @@ func main() {
 	router.GET("/model", handler.Model)
 	router.POST("/", handler.Create)
 
+	log.Infof("Starting application at port %s", conf.App.Port)
 	log.Fatal(fasthttp.ListenAndServe(
 		fmt.Sprintf(":%s", conf.App.Port),
 		router.Handler,

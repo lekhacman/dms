@@ -15,7 +15,8 @@ type AppConfig struct {
 		Password string
 	}
 	App struct {
-		Port string
+		Port     string
+		LogLevel string
 	}
 }
 

@@ -1,24 +1,28 @@
 package middleware
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
+	"github.com/lekhacman/dms/internal"
 	"github.com/valyala/fasthttp"
 )
 
-func AsJson(logger *logrus.Logger, h func(body interface{}) (res interface{})) fasthttp.RequestHandler {
-	return func(ctx *fasthttp.RequestCtx) {
+func ToJson(appCtx *internal.AppContext) func(func(*fasthttp.RequestCtx) (interface{}, error)) func(*fasthttp.RequestCtx) {
+	return func(h func(*fasthttp.RequestCtx) (interface{}, error)) func(*fasthttp.RequestCtx) {
+		return func(ctx *fasthttp.RequestCtx) {
+			ctx.Response.Header.Add("content-type", "application/json")
+			dto, err := h(ctx)
+			if err != nil {
+				ctx.Error(err.Error(), 400)
+				return
+			}
 
-		ctx.Response.Header.Add("content-type", "application/json")
-		dto := h(nil)
-		b, err := json.Marshal(dto)
-		if err != nil {
-			logger.Debugln("Error marshalling json")
+			b, err := json.Marshal(dto)
+			if err != nil {
+				appCtx.Logger.Debugln("Error marshalling json")
+			}
+
+			fmt.Fprint(ctx, string(b))
 		}
-		buf := bytes.NewBuffer(b)
-
-		fmt.Fprint(ctx, buf.String())
 	}
 }

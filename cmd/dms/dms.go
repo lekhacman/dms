@@ -6,6 +6,8 @@ import (
 	"github.com/lekhacman/dms/internal/config"
 	"github.com/lekhacman/dms/internal/handler"
 	"github.com/lekhacman/dms/internal/service"
+	"github.com/lekhacman/dms/pkg/middleware"
+	"github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
 	"os"
 )
@@ -16,10 +18,10 @@ func Index(appName string) func(ctx *fasthttp.RequestCtx) {
 	}
 }
 
-func NewRouter(appName string) *fasthttprouter.Router {
+func NewRouter(logger *logrus.Logger, appName string) *fasthttprouter.Router {
 	router := fasthttprouter.New()
 	router.GET("/", Index(appName))
-	router.GET("/model", handler.Model)
+	router.GET("/model", middleware.AsJson(logger, handler.Model))
 	router.POST("/", handler.Create)
 
 	return router
@@ -41,7 +43,7 @@ func main() {
 
 	logger := service.NewLogger(conf.App.LogLevel)
 
-	server := NewServer(NewRouter(conf.Name), logger)
+	server := NewServer(NewRouter(logger, conf.Name), logger)
 
 	logger.Infof("Starting application at port %s", conf.App.Port)
 	logger.Fatal(server.ListenAndServe(

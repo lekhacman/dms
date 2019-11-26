@@ -13,6 +13,7 @@ import (
 func Create(ctx *fasthttp.RequestCtx) {
 	document := model.Object{
 		uuid.New(),
+		uuid.New(),
 		"hello world",
 		"test",
 		1,

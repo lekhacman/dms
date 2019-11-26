@@ -5,7 +5,7 @@ import (
 	"github.com/buaazp/fasthttprouter"
 	"github.com/lekhacman/dms/internal/config"
 	"github.com/lekhacman/dms/internal/handler"
-	log "github.com/sirupsen/logrus"
+	"github.com/lekhacman/dms/internal/service"
 	"github.com/valyala/fasthttp"
 	"os"
 )
@@ -16,50 +16,35 @@ func Index(appName string) func(ctx *fasthttp.RequestCtx) {
 	}
 }
 
+func NewRouter(appName string) *fasthttprouter.Router {
+	router := fasthttprouter.New()
+	router.GET("/", Index(appName))
+	router.GET("/model", handler.Model)
+	router.POST("/", handler.Create)
+
+	return router
+}
+
+func NewServer(router *fasthttprouter.Router, logger fasthttp.Logger) *fasthttp.Server {
+	server := &fasthttp.Server{
+		MaxRequestBodySize: 10 * 1024 * 1024,
+		Handler:            router.Handler,
+		Logger:             logger,
+	}
+
+	return server
+}
+
 func main() {
 
 	conf := config.Get(fmt.Sprintf("internal/config/config.%s.toml", os.Getenv("env")))
 
-	logMap := map[string]log.Level{
-		"panic": log.PanicLevel,
-		"fatal": log.FatalLevel,
-		"error": log.ErrorLevel,
-		"warn":  log.WarnLevel,
-		"info":  log.InfoLevel,
-		"debug": log.DebugLevel,
-		"trace": log.TraceLevel,
-	}
-	logLevel, ok := logMap[conf.App.LogLevel]
-	if !ok {
-		log.Fatal("Log level not found")
-	}
-	log.SetLevel(logLevel)
+	logger := service.NewLogger(conf.App.LogLevel)
 
-	//db, err := store.NewDmsStore(store.DbSpec{
-	//	"dms",
-	//	os.Getenv("dbpass"),
-	//	"dms",
-	//	"localhost",
-	//	"5432",
-	//})
-	//
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//_, err = db.Query("SELECT * FROM objects")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
+	server := NewServer(NewRouter(conf.Name), logger)
 
-	router := fasthttprouter.New()
-	router.GET("/", Index(conf.Name))
-	router.GET("/model", handler.Model)
-	router.POST("/", handler.Create)
-
-	log.Infof("Starting application at port %s", conf.App.Port)
-	log.Fatal(fasthttp.ListenAndServe(
+	logger.Infof("Starting application at port %s", conf.App.Port)
+	logger.Fatal(server.ListenAndServe(
 		fmt.Sprintf(":%s", conf.App.Port),
-		router.Handler,
 	))
 }

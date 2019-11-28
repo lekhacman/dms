@@ -19,7 +19,7 @@ func Index(appName string) func(ctx *fasthttp.RequestCtx) {
 }
 
 func NewRouter(appCtx *internal.AppContext, appName string) *fasthttprouter.Router {
-	toJsonMid := middleware.ToJson(appCtx)
+	toJsonMid := middleware.Json(appCtx)
 	router := fasthttprouter.New()
 	router.GET("/", Index(appName))
 	router.GET("/model", toJsonMid(handler.Model))

@@ -7,7 +7,7 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-func ToJson(appCtx *internal.AppContext) func(func(*fasthttp.RequestCtx) (interface{}, error)) func(*fasthttp.RequestCtx) {
+func Json(appCtx *internal.AppContext) func(func(*fasthttp.RequestCtx) (interface{}, error)) func(*fasthttp.RequestCtx) {
 	return func(h func(*fasthttp.RequestCtx) (interface{}, error)) func(*fasthttp.RequestCtx) {
 		return func(ctx *fasthttp.RequestCtx) {
 			ctx.Response.Header.Add("content-type", "application/json")

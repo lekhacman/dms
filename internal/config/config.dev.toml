@@ -7,6 +7,7 @@ email = "khacmanle gmail dot com"
 [db]
 host = "localhost"
 port = "5432"
+name = "dms"
 user = "dms"
 password = "dms123"
 

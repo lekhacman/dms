@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"github.com/sirupsen/logrus"
 )
 
 type DbSpec struct {
@@ -14,7 +15,11 @@ type DbSpec struct {
 	Port     string
 }
 
-func NewDmsStore(spec DbSpec) (*sql.DB, error) {
+type Dms struct {
+	db *sql.DB
+}
+
+func New(log *logrus.Logger, spec DbSpec) *Dms {
 	connStr := fmt.Sprintf(
 		"user=%s password=%s dbname=%s host=%s port=%s sslmode=%s",
 		spec.User,
@@ -25,5 +30,14 @@ func NewDmsStore(spec DbSpec) (*sql.DB, error) {
 		"disable",
 	)
 
-	return sql.Open("postgres", connStr)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal("Database connection fail")
+	}
+
+	store := &Dms{
+		db: db,
+	}
+
+	return store
 }

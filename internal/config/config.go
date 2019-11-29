@@ -2,19 +2,15 @@ package config
 
 import (
 	"github.com/BurntSushi/toml"
+	"github.com/lekhacman/dms/internal/store"
 	"io/ioutil"
 	"log"
 )
 
 type AppConfig struct {
 	Name string
-	Db   struct {
-		Host     string
-		Port     string
-		User     string
-		Password string
-	}
-	App struct {
+	Db   store.DbSpec
+	App  struct {
 		Port     string
 		LogLevel string
 	}

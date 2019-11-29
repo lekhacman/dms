@@ -7,21 +7,16 @@ import (
 	"github.com/lekhacman/dms/internal/config"
 	"github.com/lekhacman/dms/internal/handler"
 	"github.com/lekhacman/dms/internal/service"
+	"github.com/lekhacman/dms/internal/store"
 	"github.com/lekhacman/dms/pkg/middleware"
 	"github.com/valyala/fasthttp"
 	"os"
 )
 
-func Index(appName string) func(ctx *fasthttp.RequestCtx) {
-	return func(ctx *fasthttp.RequestCtx) {
-		_, _ = fmt.Fprint(ctx, appName)
-	}
-}
-
 func NewRouter(appCtx *internal.AppContext, appName string) *fasthttprouter.Router {
 	toJsonMid := middleware.Json(appCtx)
 	router := fasthttprouter.New()
-	router.GET("/", Index(appName))
+	router.GET("/", handler.Index(appName))
 	router.GET("/model", toJsonMid(handler.Model))
 	router.POST("/", toJsonMid(handler.Create))
 
@@ -43,7 +38,11 @@ func main() {
 	conf := config.Get(fmt.Sprintf("internal/config/config.%s.toml", os.Getenv("env")))
 
 	logger := service.NewLogger(conf.App.LogLevel)
-	appCtx := &internal.AppContext{Logger: logger}
+	db := store.New(logger, conf.Db)
+	appCtx := &internal.AppContext{
+		Logger: logger,
+		Store:  db,
+	}
 
 	server := NewServer(NewRouter(appCtx, conf.Name), logger)
 

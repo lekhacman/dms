@@ -3,6 +3,8 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"github.com/lekhacman/dms/pkg/model"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 )
@@ -16,7 +18,33 @@ type DbSpec struct {
 }
 
 type Dms struct {
-	db *sql.DB
+	log *logrus.Logger
+	db  *sql.DB
+}
+
+func (dms *Dms) Save(dto *model.Object) bool {
+	stmt, err := dms.db.Prepare("INSERT INTO objects (id, owner_id, name, description, size, created_at, updated_at) VALUES ( $1, $2, $3, $4, $5, $6, $7 )")
+	if err != nil {
+		dms.log.Fatal(err)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(
+		dto.Id.String(),
+		dto.OwnerId.String(),
+		dto.Name,
+		dto.Description,
+		dto.Size,
+		pq.FormatTimestamp(dto.CreatedAt),
+		pq.FormatTimestamp(dto.UpdatedAt),
+	)
+
+	if err != nil {
+		dms.log.Errorf("Error inserting object %s with error %v", dto.Id, err)
+		return false
+	}
+
+	return true
 }
 
 func New(log *logrus.Logger, spec DbSpec) *Dms {
@@ -36,7 +64,8 @@ func New(log *logrus.Logger, spec DbSpec) *Dms {
 	}
 
 	store := &Dms{
-		db: db,
+		db:  db,
+		log: log,
 	}
 
 	return store

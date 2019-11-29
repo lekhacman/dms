@@ -7,11 +7,11 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-func Json(appCtx *internal.AppContext) func(func(*fasthttp.RequestCtx) (interface{}, error)) func(*fasthttp.RequestCtx) {
-	return func(h func(*fasthttp.RequestCtx) (interface{}, error)) func(*fasthttp.RequestCtx) {
+func Json(appCtx *internal.AppContext) func(func(*internal.AppContext, *fasthttp.RequestCtx) (interface{}, error)) func(*fasthttp.RequestCtx) {
+	return func(h func(*internal.AppContext, *fasthttp.RequestCtx) (interface{}, error)) func(*fasthttp.RequestCtx) {
 		return func(ctx *fasthttp.RequestCtx) {
 			ctx.Response.Header.Add("content-type", "application/json")
-			dto, err := h(ctx)
+			dto, err := h(appCtx, ctx)
 			if err != nil {
 				ctx.Error(err.Error(), 400)
 				return

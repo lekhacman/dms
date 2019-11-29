@@ -9,7 +9,7 @@ host = "localhost"
 port = "5432"
 name = "dms"
 user = "dms"
-password = "dms123"
+password = "secret"
 
 [app]
 port = "8001"

@@ -38,10 +38,10 @@ func main() {
 	conf := config.Get(fmt.Sprintf("internal/config/config.%s.toml", os.Getenv("env")))
 
 	logger := service.NewLogger(conf.App.LogLevel)
-	db := store.New(logger, conf.Db)
+	s := store.New(logger, conf.Db)
 	appCtx := &internal.AppContext{
 		Logger: logger,
-		Store:  db,
+		Store:  s,
 	}
 
 	server := NewServer(NewRouter(appCtx, conf.Name), logger)

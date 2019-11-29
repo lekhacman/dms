@@ -2,14 +2,16 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/go-playground/validator"
 	"github.com/google/uuid"
+	"github.com/lekhacman/dms/internal"
 	"github.com/lekhacman/dms/pkg/model"
 	"github.com/valyala/fasthttp"
 	"time"
 )
 
-func Create(ctx *fasthttp.RequestCtx) (interface{}, error) {
+func Create(appCtx *internal.AppContext, ctx *fasthttp.RequestCtx) (interface{}, error) {
 	var dto model.Object
 
 	err := json.Unmarshal(ctx.PostBody(), &dto)
@@ -22,7 +24,7 @@ func Create(ctx *fasthttp.RequestCtx) (interface{}, error) {
 		return nil, err
 	}
 
-	return model.Object{
+	target := &model.Object{
 		Id:          uuid.New(),
 		OwnerId:     uuid.New(),
 		Name:        dto.Name,
@@ -30,5 +32,11 @@ func Create(ctx *fasthttp.RequestCtx) (interface{}, error) {
 		Size:        uint32(len([]byte(dto.Content))), // Overflow if larger than 4GB
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
-	}, nil
+	}
+	ok := appCtx.Store.Save(target)
+	if !ok {
+		return nil, errors.New("Wa lau eh!")
+	}
+
+	return target, nil
 }

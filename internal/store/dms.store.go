@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/lekhacman/dms/pkg/model"
-	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 )
@@ -30,13 +29,13 @@ func (dms *Dms) Save(dto *model.Object) bool {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(
-		dto.Id.String(),
-		dto.OwnerId.String(),
+		dto.Id,
+		dto.OwnerId,
 		dto.Name,
 		dto.Description,
 		dto.Size,
-		pq.FormatTimestamp(dto.CreatedAt),
-		pq.FormatTimestamp(dto.UpdatedAt),
+		dto.CreatedAt,
+		dto.UpdatedAt,
 	)
 
 	if err != nil {
